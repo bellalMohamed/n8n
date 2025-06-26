@@ -345,13 +345,13 @@ EOF
     fi
     
     # Create domain configuration if it doesn't exist
-    if [ ! -f data/nginx/conf.d/zealautomations.cloud.conf ]; then
+    if [ ! -f data/nginx/conf.d/n8n.zealautomations.cloud.conf ]; then
         print_status "Creating Nginx domain configuration..."
-        cat > data/nginx/conf.d/zealautomations.cloud.conf << 'EOF'
+        cat > data/nginx/conf.d/n8n.zealautomations.cloud.conf << 'EOF'
 # HTTP server (temporary, for Let's Encrypt)
 server {
     listen 80;
-    server_name zealautomations.cloud;
+    server_name n8n.zealautomations.cloud;
     
     # Main application
     location / {
@@ -382,7 +382,7 @@ server {
     }
 }
 EOF
-        print_warning "Please update the domain name in data/nginx/conf.d/zealautomations.cloud.conf if needed"
+        print_warning "Please update the domain name in data/nginx/conf.d/n8n.zealautomations.cloud.conf if needed"
     fi
     
     # Make init-data.sh executable
@@ -395,7 +395,7 @@ EOF
     echo "2. Update domain name in Nginx config if needed"
     echo "3. Run: ./ssl-setup.sh to set up SSL certificates"
     echo "4. Run: docker-compose up -d to start services"
-    echo "5. Access n8n at: https://zealautomations.cloud (after DNS setup)"
+    echo "5. Access n8n at: https://n8n.zealautomations.cloud (after DNS setup)"
     echo ""
     echo "For more information, see README.md and DEPLOYMENT.md"
 }
