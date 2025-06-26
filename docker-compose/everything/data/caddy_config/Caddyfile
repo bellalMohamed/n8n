@@ -1,0 +1,6 @@
+zealautomations.cloud {
+    tls
+    reverse_proxy n8n:5678 {
+        flush_interval -1
+    }
+}
