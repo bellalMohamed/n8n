@@ -275,7 +275,7 @@ main_setup() {
     
     # Create necessary directories
     print_status "Creating necessary directories..."
-    mkdir -p data/nginx/ssl data/local_files
+    mkdir -p data/nginx/ssl data/local_files data/nginx/conf.d
     
     # Create Nginx configuration if it doesn't exist
     if [ ! -f data/nginx/nginx.conf ]; then
