@@ -1,6 +1,6 @@
-# Google Cloud Deployment Guide for zealautomations.cloud
+# Google Cloud Deployment Guide for zealautomations.cloud (Nginx)
 
-This guide will help you deploy the n8n everything setup to Google Cloud Platform.
+This guide will help you deploy the n8n everything setup with Nginx to Google Cloud Platform.
 
 ## Prerequisites
 
@@ -112,17 +112,17 @@ gcloud compute ssh n8n-server --zone=us-central1-a
 
 4. **Create necessary directories:**
    ```bash
-   mkdir -p data/caddy_config data/local_files
+   mkdir -p data/nginx/ssl data/local_files
    ```
 
 5. **Make scripts executable:**
    ```bash
-   chmod +x init-data.sh setup.sh
+   chmod +x init-data.sh setup.sh ssl-setup.sh
    ```
 
-6. **Start the services:**
+6. **Start the services (without SSL first):**
    ```bash
-   docker-compose up -d
+   docker-compose up -d postgres redis n8n n8n-worker
    ```
 
 ## Step 6: Configure DNS
@@ -139,9 +139,29 @@ gcloud compute ssh n8n-server --zone=us-central1-a
      - **Value**: Your VM's external IP address
      - **TTL**: 300 (or default)
 
-## Step 7: SSL Certificate
+## Step 7: Set up SSL Certificates
 
-Caddy will automatically obtain SSL certificates from Let's Encrypt for `zealautomations.cloud`. The first time you access the site, it may take a few minutes for the certificate to be issued.
+1. **Install Certbot:**
+   ```bash
+   sudo apt install -y certbot
+   ```
+
+2. **Generate self-signed certificate for testing:**
+   ```bash
+   ./ssl-setup.sh
+   # Choose option 1 for self-signed certificate
+   ```
+
+3. **For production, obtain Let's Encrypt certificate:**
+   ```bash
+   ./ssl-setup.sh
+   # Choose option 2 and enter your email address
+   ```
+
+4. **Start Nginx with SSL:**
+   ```bash
+   docker-compose up -d nginx
+   ```
 
 ## Step 8: Access n8n
 
@@ -157,6 +177,7 @@ Once DNS propagates (can take up to 24 hours, but usually much faster):
 3. **Configure Google Cloud firewall** to only allow necessary ports
 4. **Set up regular backups** of the Docker volumes
 5. **Monitor logs** for suspicious activity
+6. **Set up automatic SSL renewal** with cron
 
 ## Step 10: Monitoring and Maintenance
 
@@ -181,6 +202,17 @@ docker run --rm -v everything_db_storage:/data -v /home/backups:/backup alpine t
 docker run --rm -v everything_n8n_storage:/data -v /home/backups:/backup alpine tar czf /backup/n8n_backup_$(date +%Y%m%d_%H%M%S).tar.gz -C /data .
 ```
 
+### SSL Certificate Renewal:
+```bash
+# Manual renewal
+./ssl-setup.sh
+# Choose option 3
+
+# Automatic renewal (add to crontab)
+sudo crontab -e
+# Add: 0 12 * * * /path/to/your/project/ssl-setup.sh renew
+```
+
 ## Troubleshooting
 
 ### Check service status:
@@ -188,9 +220,9 @@ docker run --rm -v everything_n8n_storage:/data -v /home/backups:/backup alpine 
 docker-compose ps
 ```
 
-### Check Caddy logs for SSL issues:
+### Check Nginx logs for SSL issues:
 ```bash
-docker-compose logs caddy
+docker-compose logs nginx
 ```
 
 ### Check n8n logs:
@@ -198,10 +230,28 @@ docker-compose logs caddy
 docker-compose logs n8n
 ```
 
+### Test Nginx configuration:
+```bash
+docker-compose exec nginx nginx -t
+```
+
 ### Restart services:
 ```bash
 docker-compose restart
 ```
+
+## Nginx Features
+
+This Nginx setup includes:
+
+- **SSL/TLS termination** with modern security settings
+- **HTTP/2 support** for better performance
+- **Rate limiting** for API and login endpoints
+- **Security headers** (HSTS, CSP, XSS protection)
+- **Gzip compression** for better performance
+- **WebSocket support** for real-time features
+- **Health check endpoint** at `/health`
+- **Automatic HTTP to HTTPS redirect**
 
 ## Cost Optimization
 
@@ -215,4 +265,5 @@ docker-compose restart
 For issues:
 - Check the [n8n documentation](https://docs.n8n.io/)
 - Visit the [n8n community forums](https://community.n8n.io/)
-- Review [Google Cloud documentation](https://cloud.google.com/docs/) 
+- Review [Google Cloud documentation](https://cloud.google.com/docs/)
+- Check [Nginx documentation](https://nginx.org/en/docs/) 

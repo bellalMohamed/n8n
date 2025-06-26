@@ -2,7 +2,7 @@ volumes:
   db_storage:
   n8n_storage:
   redis_storage:
-  caddy_data:
+  nginx_ssl:
 
 x-shared: &shared
   restart: always
@@ -66,18 +66,23 @@ services:
       timeout: 5s
       retries: 10
 
-  caddy:
-    image: caddy:latest
+  nginx:
+    image: nginx:alpine
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - caddy_data:/data
-      - ${DATA_FOLDER}/caddy_config:/config
-      - ${DATA_FOLDER}/caddy_config/Caddyfile:/etc/caddy/Caddyfile
+      - nginx_ssl:/etc/nginx/ssl
+      - ${DATA_FOLDER}/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${DATA_FOLDER}/nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - n8n
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   n8n:
     <<: *shared
