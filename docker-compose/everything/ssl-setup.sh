@@ -165,7 +165,7 @@ obtain_lets_encrypt() {
     
     # Obtain certificate
     sudo certbot certonly --standalone \
-        --email your-email@example.com \
+        --email b.mohamed@getzeal.io \
         --agree-tos \
         --no-eff-email \
         -d zealautomations.cloud
