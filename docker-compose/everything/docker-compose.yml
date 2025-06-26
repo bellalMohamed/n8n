@@ -2,6 +2,7 @@ volumes:
   db_storage:
   n8n_storage:
   redis_storage:
+  caddy_data:
 
 x-shared: &shared
   restart: always
@@ -17,11 +18,18 @@ x-shared: &shared
     - QUEUE_BULL_REDIS_HOST=redis
     - QUEUE_HEALTH_CHECK_ACTIVE=true
     - N8N_ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    - N8N_HOST=${DOMAIN_NAME}
+    - N8N_PORT=5678
+    - N8N_PROTOCOL=https
+    - NODE_ENV=production
+    - WEBHOOK_URL=https://${DOMAIN_NAME}/
+    - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
   links:
     - postgres
     - redis
   volumes:
     - n8n_storage:/home/node/.n8n
+    - ${DATA_FOLDER}/local_files:/files
   depends_on:
     redis:
       condition: service_healthy
@@ -58,6 +66,19 @@ services:
       timeout: 5s
       retries: 10
 
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - ${DATA_FOLDER}/caddy_config:/config
+      - ${DATA_FOLDER}/caddy_config/Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - n8n
+
   n8n:
     <<: *shared
     ports:
@@ -67,4 +88,4 @@ services:
     <<: *shared
     command: worker
     depends_on:
-      - n8n
+      - n8n 
