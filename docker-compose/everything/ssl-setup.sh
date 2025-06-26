@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # SSL Certificate Setup Script for Nginx with Let's Encrypt
-# This script helps you set up SSL certificates for zealautomations.cloud
+# This script helps you set up SSL certificates for zealautomations.com
 
 set -e
 
-echo "🔒 Let's Encrypt SSL Certificate Setup for zealautomations.cloud"
+echo "🔒 Let's Encrypt SSL Certificate Setup for zealautomations.com"
 echo "===================================================================="
 
 # Check if certbot is available
@@ -36,10 +36,10 @@ obtain_lets_encrypt() {
         --email b.mohamed@getzeal.io \
         --agree-tos \
         --no-eff-email \
-        -d zealautomations.cloud
+        -d zealautomations.com
     
     # Verify certificates were obtained
-    if [ ! -f /etc/letsencrypt/live/zealautomations.cloud/fullchain.pem ] || [ ! -f /etc/letsencrypt/live/zealautomations.cloud/privkey.pem ]; then
+    if [ ! -f /etc/letsencrypt/live/zealautomations.com/fullchain.pem ] || [ ! -f /etc/letsencrypt/live/zealautomations.com/privkey.pem ]; then
         echo "❌ Failed to obtain Let's Encrypt certificates"
         echo "🔄 Starting Nginx with HTTP-only configuration..."
         docker-compose up -d nginx
@@ -48,8 +48,8 @@ obtain_lets_encrypt() {
     
     # Copy certificates to nginx directory
     echo "📋 Copying certificates to Nginx directory..."
-    sudo cp /etc/letsencrypt/live/zealautomations.cloud/fullchain.pem data/nginx/ssl/cert.pem
-    sudo cp /etc/letsencrypt/live/zealautomations.cloud/privkey.pem data/nginx/ssl/key.pem
+    sudo cp /etc/letsencrypt/live/zealautomations.com/fullchain.pem data/nginx/ssl/cert.pem
+    sudo cp /etc/letsencrypt/live/zealautomations.com/privkey.pem data/nginx/ssl/key.pem
     
     # Set proper permissions
     sudo chown -R $USER:$USER data/nginx/ssl/
@@ -68,11 +68,11 @@ obtain_lets_encrypt() {
     
     # Update Nginx configuration with full SSL setup
     echo "📝 Updating Nginx configuration with SSL..."
-    cat > data/nginx/conf.d/zealautomations.cloud.conf << 'EOF'
+    cat > data/nginx/conf.d/zealautomations.com.conf << 'EOF'
 # HTTP to HTTPS redirect
 server {
     listen 80;
-    server_name zealautomations.cloud;
+    server_name zealautomations.com;
     
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -87,7 +87,7 @@ server {
 server {
     listen 443 ssl;
     http2 on;
-    server_name zealautomations.cloud;
+    server_name zealautomations.com;
     
     # SSL Configuration
     ssl_certificate /etc/nginx/ssl/cert.pem;
@@ -202,8 +202,8 @@ renew_certificates() {
     sudo certbot renew
     
     # Copy renewed certificates
-    sudo cp /etc/letsencrypt/live/zealautomations.cloud/fullchain.pem data/nginx/ssl/cert.pem
-    sudo cp /etc/letsencrypt/live/zealautomations.cloud/privkey.pem data/nginx/ssl/key.pem
+    sudo cp /etc/letsencrypt/live/zealautomations.com/fullchain.pem data/nginx/ssl/cert.pem
+    sudo cp /etc/letsencrypt/live/zealautomations.com/privkey.pem data/nginx/ssl/key.pem
     
     # Set proper permissions
     sudo chown -R $USER:$USER data/nginx/ssl/
@@ -251,4 +251,4 @@ echo "1. Your site now has valid SSL certificates from Let's Encrypt"
 echo "2. Set up automatic renewal with: sudo crontab -e"
 echo "   Add: 0 12 * * * /path/to/your/project/ssl-setup.sh renew"
 echo ""
-echo "Access your n8n instance at: https://zealautomations.cloud" 
+echo "Access your n8n instance at: https://zealautomations.com" 
