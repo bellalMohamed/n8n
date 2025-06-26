@@ -7,7 +7,6 @@ docker-caddy/.env
 docker-compose/*/.env
 
 # Docker volumes and data
-data/
 volumes/
 
 # Logs
